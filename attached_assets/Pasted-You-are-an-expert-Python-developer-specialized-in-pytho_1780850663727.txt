@@ -1,0 +1,52 @@
+You are an expert Python developer specialized in python-telegram-bot (version 20+) and MongoDB (`pymongo`). Build a comprehensive, high-security "Developer Control Panel" (لوحة المطور) accessible STRICTLY by the Developer's hardcoded Telegram User ID.
+
+CRITICAL UI & LOGIC RULES:
+
+1. STRICTLY NO EMOJIS anywhere in the code, text responses, buttons, or exported logs. Use premium Arabic typographic symbols (e.g., ❖, ◈, ▲, ▼, ◆, ➔, 【, 】).
+2. BUTTONS STYLING (Telegram Bot API 9.4): Use the `style` property for InlineKeyboardButtons. 'danger' (Red) for stopping, locking, or canceling. 'success' (Green) for starting, activating, or open states. 'primary' (Blue) for configurations and navigation.
+3. TEXT FORMATTING: All administrative responses and menus must use clean, well-spaced HTML formatting (<b>, <blockquote>, <tg-spoiler>). Properly escape all text entities.
+4. STRICT AUTHENTICATION: Every feature in this module must validate that `update.effective_user.id == DEVELOPER_ID`. If not, ignore completely or return a silent failure.
+
+CORE DEVELOPER SYSTEMS TO IMPLEMENT:
+
+1. BOT STATE & MAINTENANCE MODE (نظام الصيانة):
+- Implement a global toggle in MongoDB for Bot Status (On/Off).
+- If turned OFF, implement a global middleware check: Any incoming update from any user or group (EXCEPT the Developer) must be immediately intercepted, and the bot must reply with a predefined HTML maintenance message ("<b>❖ البوت في حالة صيانة مؤقتة حالياً...</b>") and cease further code execution.
+1. ADVANCED MULTI-OPTION BROADCASTING (نظام الإذاعة الذكية):
+Implement two scopes of broadcasting via a multi-step workflow:
+- General Broadcast (إحصاء المجموعات): Broadcasts to all groups containing the bot.
+- Private Broadcast (إحصاء الخاص): Broadcasts to all users who have started the bot in PV.
+- Workflow Options: When the Developer enters the broadcast message, provide a colored layout with toggles:
+    - Option A: Pin Message (تثبيت الرسالة) -> Toggles whether the bot pins the message after sending.
+    - Option B: Auto-Delete (الحذف التلقائي) -> Prompts the Developer to enter a duration in seconds, after which the bot automatically deletes the broadcasted message using `context.job_queue`.
+    - Option C: Both Pin & Auto-Delete concurrently.
+- Trigger Button: A 'success' styled button named "إبدأ الإرسال" to execute the broadcast asynchronously in the background.
+1. DUAL-LAYER MANDATORY SUBSCRIPTION (الاشتراك الإجباري):
+- Layer 1 (For the Bot PV): Developer sets a global channel/group link and ID in MongoDB. When a regular user opens the bot in private chat, the bot verifies their membership using `get_chat_member`. If not subscribed, it locks the interface and presents an HTML requirement block with a direct URL button to join.
+- Layer 2 (For Groups): Developer sets a channel/group. If any member in any group (restricted to ranks BELOW Group Owner and Creator) sends a message, the bot checks their subscription to the Developer's channel. If they are not subscribed, the bot deletes their message instantly and replies with an HTML alert directing them to subscribe, utilizing an inline URL button.
+1. GLOBAL RANDOMIZING REPLIES (الردود العامة المفتوحة):
+- Create a 'global_replies' collection in MongoDB. The Developer can add global keywords with responses.
+- Supported Media: Text-only, Photo with Text, Photo-only, or Sticker.
+- Cardinality Rule: Unlike the group system, the Developer can assign MULTIPLE responses to a single global keyword.
+- Execution Logic: When any user triggers this keyword in any group, the bot queries the array of responses from MongoDB and uses `random.choice()` to seamlessly alternate and vary the response sent.
+1. BOT PRIVATE CHAT PROTECTION (حماية البوت من الداخل):
+- To protect the bot from Telegram TOS violations, implement an identical media filter system strictly for the bot's Private Chat (PV).
+- Provide an inline control menu for the Developer to Lock/Unlock specific incoming media types (Photos, Stickers, Files, etc.) inside PV.
+- If a regular user sends a locked media type or edits a message inside the bot's private chat, the bot must instantly delete it.
+1. ADVANCED STATISTICS EXPORT (.txt Generation):
+- Command `المستخدمين`: Queries MongoDB for all private chat users. Generates a perfectly formatted, clean, space-aligned `.txt` file containing columns: [Index | Name | Username | Chat ID]. Sends this file to the Developer via `context.bot.send_document`.
+- Command `المجموعات`: Queries MongoDB for all groups using the bot. Generates a clean `.txt` file with columns: [Index | Group Name | Group Link/Invite | Group ID]. Sends this file via `context.bot.send_document`.
+
+Write modular, production-ready, highly secure asynchronous Python code. Ensure background tasks handle skipped chats smoothly (e.g., if the bot was kicked or blocked) without crashing the broadcast loop.
+
+Add this command routing and authentication logic to the bot architecture:
+
+1. Command `/panel` (لوحة التحكم للمطور):
+    - This command must strictly check the user's incoming Telegram ID against the hardcoded DEVELOPER_ID.
+    - If the ID matches, the bot opens the interactive Developer Control Panel (لوحة المطور) using HTML formatting and colored buttons as specified before.
+    - If the ID does NOT match, the bot must completely ignore the command and send no response at all to ensure security.
+2. Command `/start` (الواجهة الرئيسية العادية):
+    - This command is universally accessible to everyone, including regular users, group admins, and the Developer themselves.
+    - When triggered, it always displays the standard main user interface (الواجهة الرئيسية العادية للبوت) with basic information and features, completely bypassing the Developer Panel.
+
+Ensure both handlers are registered correctly in the main application loop using `CommandHandler` and function seamlessly without interfering with each other.

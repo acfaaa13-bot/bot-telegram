@@ -1,0 +1,49 @@
+You are an expert Python developer. Build a comprehensive "Mute, Ban, and Auto-Mute Punishment System" (نظام الكتم والحظر - الكتم التلقائي) for a Telegram Group Management Bot using `python-telegram-bot` (version 20+) and MongoDB (`pymongo`).
+
+CRITICAL UI & LOGIC RULES:
+
+1. STRICTLY NO EMOJIS anywhere in the code, text responses, buttons, or logs. Use structured typographic symbols matching Arabic layouts (e.g., ❖, ◈, ▲, ▼, ●, ➔, 【, 】).
+2. BUTTONS STYLING (Telegram Bot API 9.4): Use the `style` property for InlineKeyboardButtons. Destructive or locked states must be 'danger' (Red). Allowed/Active states must be 'success' (Green). Navigation or informational buttons must be 'primary' (Blue).
+3. TEXT FORMATTING: All bot responses must use structured HTML formatting (<b>, <blockquote>, <tg-spoiler>). Ensure proper text entity escaping to prevent parsing crashes.
+4. ADMIN IMMUNITY: The Developer, Owner, Creator, Admins, and Moderators are completely IMMUNE to all punishments (mute, ban, warn, auto-mute).
+
+CORE MODERATION LOGIC (Reply-based Commands):
+Implement the following commands which must be triggered by replying to a target user's message:
+
+- `كتم`: Permanently restricts the target user from sending messages using `restrict_chat_member` with `ChatPermissions()` set to all False. Send an HTML confirmation text. (Telegram naturally displays a bar at the bottom for restricted users).
+- `كتم`  + [number]: Timed mute. Parses the number as minutes (e.g., `كتم 10`). Calculate the expiry using `datetime.now() + timedelta(minutes=X)` and pass it to the `until_date` parameter of `restrict_chat_member`.
+- `فك كتم` or `فك الكتم`: Lifts any permanent, temporary, or automatic restriction from the user.
+- `حظر`: Bans the user permanently using `ban_chat_member`. They will be removed from the group and blocked from rejoining via links or invites.
+- `فك حظر` or `فك الحظر`: Unbans the user using `unban_chat_member`, allowing them to rejoin the chat.
+- `تحذير`: Manually adds 1 warning point to the user in MongoDB and notifies them. If they reach the warning limit, execute the auto-mute punishment.
+- `مسح تحذير`: Decrements or resets the target user's warning count in MongoDB.
+
+AUTO-MUTE PUNISHMENT INTEGRATION (الكتم التلقائي):
+
+- This feature connects with the previously built "Media Filters" and "Locks" systems.
+- When a regular member violates a locked filter (e.g., sends a photo when Photos are locked, or floods/edits messages when locked), the bot deletes the violating message.
+- If Auto-Mute is Enabled (`تفعيل الكتم التلقائي`), the bot automatically issues a warning point to the user in MongoDB.
+- Once the user's total warning count reaches the maximum limit (`عدد التحذيرات`), the bot automatically applies a timed mute punishment for the configured duration (`مده الكتم`) in minutes, resets their warning count for this group, and sends an HTML alert.
+- If Auto-Mute is Disabled (`تعطيل الكتم التلقائي`), the bot will ONLY delete the violating message without counting warnings or issuing mutes.
+
+AUTO-MUTE SETTINGS & COMMANDS:
+
+1. Manual Admin Configuration Commands:
+    - `تعيين عدد التحذيرات`  + [number]: Sets the maximum warnings threshold per group in MongoDB.
+    - `تعيين مده الكتم`  + [number]: Sets the auto-mute duration in minutes per group in MongoDB.
+    - `تفعيل الكتم التلقائي`: Enables the warning and auto-mute logic.
+    - `تعطيل الكتم التلقائي`: Disables the auto-mute logic (retains text/media deletion only).
+2. Interactive Control Command: `الكتم التلقائي`
+    - Response: Sends a clean HTML message detailing the status.
+    - Inline Keyboard Layout: Exactly 2 buttons styled as 'primary' (Blue):
+        - Button 1: "حاله الكتم" -> Clicking it shows an HTML blockquote displaying whether auto-mute is active, the current warning limit, and the punishment duration.
+        - Button 2: "اعدادات الكتم" -> Access check: Only for Owner/Creator. Displays a neat menu indicating how to use the manual modification commands or providing simple adjustment toggles.
+
+LISTS & BULK CLEANING COMMANDS:
+
+- `المكتومين`: Queries MongoDB or uses chat logs to fetch and display an HTML list of all currently restricted users in the group (with usernames/IDs).
+- `المحظورين`: Fetches and displays an HTML list of all banned users in the group.
+- `مسح المكتومين`: Iterates through all muted users in the group and lifts their restrictions simultaneously (Bulk Unmute).
+- `مسح المحظورين`: Iterates through all banned users and lifts their bans simultaneously (Bulk Unban).
+
+Write complete, modular, error-free Python code using optimal asynchronous practices. Ensure perfect compatibility with MongoDB operations and strict adherence to the formatting rules.

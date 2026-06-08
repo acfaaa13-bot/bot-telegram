@@ -1,0 +1,59 @@
+You are an expert Python developer specialized in the Telegram Bot API. Build a highly structured and robust Telegram Group Management and Ranks System using the `python-telegram-bot` library (version 20+) and MongoDB (`pymongo`) for database storage.
+
+CRITICAL UI & FORMATTING RULES:
+
+1. STRICTLY NO EMOJIS anywhere in the code, text responses, buttons, or logs. Use elegant text symbols compatible with Arabic typography, such as: ❖, ◈, ✦, ✧, ▲, ▼, ●, ○, ■, □, ➔, 【, 】.
+2. BUTTONS STYLING (Telegram Bot API 9.4): Utilize the new `style` property for InlineKeyboardButtons to create colored buttons. Use 'danger' (Red), 'success' (Green), and 'primary' (Blue). No transparent/default buttons.
+3. BUTTONS GEOMETRY: Structure inline keyboards strictly using defined grids like 2-1-2 or 3-2 patterns depending on the layout.
+4. TEXT FORMATTING: All responses must use native HTML formatting. Apply advanced formatting like <b>bold</b>, <blockquote>blockquote text</blockquote>, and <tg-spoiler>spoiler text</tg-spoiler> correctly. Escape all HTML entities properly to avoid parsing errors. Use placeholders like #username, #id, #rank, and #tag dynamically.
+5. 24/7 UPTIME: Embed a lightweight Flask web server running on a separate thread to handle self-pings via UptimeRobot.
+
+DATABASE SCHEMA (MongoDB):
+
+- A collection for 'groups' storing group settings and permissions.
+- A collection for 'users' tracking their custom rank, granular custom rights, and user tags (#tag).
+
+RANKS HIERARCHY & LOGIC:
+
+1. Developer (المطور): Hardcoded user ID. Has absolute control. Immune to all restrictions (mute/ban/commands). Can promote/demote anyone. This rank MUST NEVER appear in any public bot info, staff lists, or logs.
+2. Owner (مالك): The actual Telegram group owner. Has full management rights except over the Developer.
+3. Creator (منشئ): Promoted via command `رفع منشئ`, demoted via `تنزيل منشئ`. Full owner-like management rights.
+4. Admin (أدمن): Promoted via `رفع ادمن`, demoted via `تنزيل ادمن`. Cannot promote admins or modify group info.
+5. Moderator (مشرف): Promoted via `رفع مشرف`, demoted via `تنزيل مشرف`. Cannot promote admins, ban members, or change group info.
+6. Member (عضو): Default rank. Can trigger custom keywords and have a custom tag/title if allowed.
+
+GRANULAR RIGHTS MANAGEMENT & DYNAMIC INLINE MENU:
+When a user is promoted (Creator, Admin, or Moderator), the bot sends a confirmation message in valid HTML. Underneath this message, display a colored button styled as 'primary' named "تعديل الصلاحيات".
+Only the user who executed the promotion command (or a higher rank with appropriate permissions) can click this button. Clicking it replaces the message with an inline grid menu managing the following 8 specific Telegram permissions:
+
+- تغيير معلومات المجموعه (Change group info)
+- مسح الرسائل (Delete messages)
+- حظر مستخدمين (Ban users)
+- تثبيت الرسائل (Pin messages)
+- التحكم في المكالمات الصوتيه (Manage voice/video calls)
+- تعديل وسم الاعضاء (Edit member tags)
+- اضافه مشرفين جدد (Add new admins)
+- دعوه مستخدمين من خلال اللينك (Invite users via link)
+
+Each permission row must feature the permission name, followed by its status toggle button. Use the Bot API 9.4 styling: 'success' (Green) if allowed, and 'danger' (Red) if restricted. Changes must dynamically update the user's specific access rights in MongoDB and apply them to the group via Telegram API.
+
+ADMIN TAG / CUSTOM TITLE FEATURE:
+Implement native Telegram custom titles for group staff as requested.
+
+- Command syntax: `لقب + [اللقب المطلوب]` (e.g., لقبي + الملك).
+- The bot must apply this custom title to the user natively via `set_chat_administrator_custom_title`.
+- Save this custom tag in MongoDB as `#tag` associated with the user for text placeholders.
+
+REQUIRED COMMANDS & TEXT RESPONSES (HTML with Arabic Layout):
+Ensure responses are heavily structured, clean, and well-spaced.
+
+- `صلاحياتي`: Displays a blockquote of the calling user's custom rights.
+- `صلاحيات`: Modifies permissions of a ranked user (usable only by higher ranks).
+- `رتبتي`: Returns the user's rank formatted in bold and spoiler tags: <b>رتبتك هي:</b> <tg-spoiler>#rank</tg-spoiler>.
+- `المالك`: Displays the group owner's username, biography, and an inline 'primary' button linked directly to their profile.
+- `المنشئين`: Fetches and lists all users with 'منشئ' rank from MongoDB using usernames.
+- `الادمنيه`: Lists all users with 'أدمن' rank.
+- `المشرفين`: Lists all users with 'مشرف' rank.
+- `المدراء`: Lists a combined compilation of all staff members (Owner, Creators, Admins, Moderators) sorted hierarchically.
+
+Write complete, modular, and error-free Python code. Handle API exceptions smoothly, implement background DB saving, and format the output beautifully matching the user's explicit design rules.

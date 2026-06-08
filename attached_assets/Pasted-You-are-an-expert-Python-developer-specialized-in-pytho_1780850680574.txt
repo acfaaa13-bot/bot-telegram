@@ -1,0 +1,45 @@
+You are an expert Python developer specialized in python-telegram-bot (version 20+). Build an "Advanced Dual-Layer Mandatory Subscription System" (نظام الاشتراك الإجباري المتقدم والمدمج) integrated with MongoDB (`pymongo`).
+
+CRITICAL UI & LOGIC RULES:
+
+1. STRICTLY NO EMOJIS anywhere in the code, text responses, buttons, or logs. Use clean Arabic typographic symbols (e.g., ❖, ◈, ▲, ▼, ➔, 【, 】).
+2. BUTTONS STYLING (Telegram Bot API 9.4): Use the `style` property for InlineKeyboardButtons. Channel joining buttons must be styled as 'primary' (Blue). Action confirmation or error control buttons can use 'danger' (Red) or 'success' (Green).
+3. BUTTONS GEOMETRY: When a user violates both subscription layers, the two channel buttons MUST be displayed strictly side-by-side in a single row (بجانب بعضهم في سطر واحد).
+4. TEXT FORMATTING: All operational responses must use clean, structured Arabic HTML (<b>, <blockquote>). Properly escape text entities to prevent parsing crashes.
+5. STAFF IMMUNITY: The Developer, Group Owner (المالك), and Creator (المنشئ) are completely IMMUNE to this subscription check. The bot must never check or delete their messages.
+
+DATABASE SCHEMA INTEGRATION (MongoDB):
+In the 'groups' collection, maintain the following fields per group:
+
+- `mandatory_sub_enabled` (Boolean)
+- `group_channel_id` (String/Integer)
+- `group_channel_link` (String)
+
+The global Developer channel ID and link are already stored globally from the Developer module.
+
+SUBSCRIPTION CHECKING LOGIC (The Middleware):
+Implement a core message handler that intercepts messages from regular members (ranks below Creator).
+
+- Step 1: Check if the Developer's global mandatory subscription is active. If active, use `get_chat_member` to check if the user is a member of the Developer's channel.
+- Step 2: Check if the Group's mandatory subscription is enabled (`mandatory_sub_enabled == True`). If active, verify if the user is a member of the group-configured channel.
+- Step 3: Enforcement Action:
+    - If the user is missing BOTH subscriptions: Instantly delete their message. Reply with a structured HTML message alerting them to subscribe to both channels to unlock chatting. Attach an inline keyboard containing EXACTLY TWO buttons placed side-by-side in one row: [Button 1: قناة المطور | Button 2: قناة المجموعة]. Both styled as 'primary' URL buttons.
+    - If the user is missing ONLY the Developer's subscription: Delete their message, send the alert, and show ONLY the Developer's channel button.
+    - If the user is missing ONLY the Group's subscription: Delete their message, send the alert, and show ONLY the Group's channel button.
+
+REQUIRED ADMIN COMMANDS (Owner & Creator Only):
+Restrict the following commands strictly to the Group Owner and Creator. Return a silent ignore or HTML permission error for anyone else:
+
+1. Enable/Add Channel Command: `اشتراك اجباري`  + [Link, Username, or ID]
+    - The bot must parse the argument (resolving Telegram channel links, usernames with @, or raw IDs).
+    - Verify if the bot is an admin in that channel using `get_chat_member` on its own ID. If it lacks admin rights, return an HTML failure response.
+    - If successful, save the channel details to MongoDB, set `mandatory_sub_enabled = True`, and send a structured HTML success confirmation.
+2. Modify Channel Command: `تعديل القناه`  + [New Link, Username, or ID]
+    - Validates the new channel, verifies bot admin rights, overwrites the old channel data in MongoDB, and confirms via HTML.
+3. Delete Channel Command: `حذف القناه`
+    - Removes the stored channel details from the group's MongoDB document, sets `mandatory_sub_enabled = False`, and sends an HTML confirmation.
+4. Disable Checking Command: `تعطيل الاشتراك الاجباري`
+    - Sets `mandatory_sub_enabled = False` in MongoDB.
+    - CRITICAL LOGIC: Send an HTML notification stating that the group's custom restriction is turned off, but explicitly note that the Developer's global channel restriction (`اشتراك المطور`) remains permanently active and cannot be bypassed.
+
+Write optimized, production-ready asynchronous Python code. Ensure robust try-except blocks handle scenarios where the channel is private or the bot is kicked from the target channel gracefully without crashing the main application loop.

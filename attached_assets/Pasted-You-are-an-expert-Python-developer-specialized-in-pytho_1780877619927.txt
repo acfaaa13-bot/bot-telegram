@@ -1,0 +1,45 @@
+You are an expert Python developer specialized in python-telegram-bot (version 20+) and MongoDB (`pymongo`). Apply the following deep structural system fixes, new commands, and engine re-architectures to the bot project.
+
+CRITICAL DESIGN COMPLIANCE:
+1. STRICTLY NO EMOJIS anywhere in the text responses, keyboards, alerts, or pop-ups. Use premium Arabic typographic symbols exclusively (❖, ✦, ◈, ▲, ▼, ➔, ◀, 【, 】).
+2. BUTTON STYLING (API 9.4): All inline buttons must have solid background colors using the `style` property ('success' for green, 'danger' for red, 'primary' for blue). No transparent buttons.
+3. PERSONALITY: No AI clichés, no filler text, keep interfaces highly optimized, minimalist, and direct.
+
+1. GLOBAL TEXT & EDITED MESSAGES INTERCEPTOR FIX
+- The bot must respond to keyword responses (Local & Global Replies) triggered by ANY member, including regular members (عضو), not just staff.
+- Implement an `edited_message` handler globally. Whenever a message is edited (Text-to-Text, Text-to-Photo, Photo-to-Text, etc.), regardless of whether it is an old or new message, it must immediately pass through all text normalization, content locks, keywords, and anti-spam filters.
+
+2. ANTI-FLOOD, SPAM & GROUP LOCK ENGINE
+- Repetition Lock (التكرار): Implement the manual command `تعيين عدد التكرار ` + [number]. Track message hash hashes per user. If a user repeats the exact same message beyond the threshold, execute a temporary mute.
+- Anti-Spam Engine: Implement commands `تعيين مده اسبام ` + [seconds] and `تعيين عدد السبام ` + [messages]. Use an in-memory sliding window cache. If a user exceeds X messages within Y seconds, trigger their first warning (`تحذير`), and INSTANTLY wipe/delete all of their recent spam messages from the chat group.
+- Chat Lock Fix (`قفل المجموعه`): Fix the chat lock state. When a group is locked via the dashboard, intercept all incoming messages from regular non-staff members, instantly delete them, and reply with an HTML warning: "<b>❖ عذراً، يمنع إرسال الرسائل في هذه المجموعة حالياً إلا لأصحاب الرتب.</b>"
+
+3. FIXED HIERARCHY PRIVILEGES & TELEGRAM SYNC
+Establish absolute real-time API syncing when roles are modified:
+- Moderator (مشرف): Full group rights EXCEPT banning users, promoting moderators, modifying tags/custom titles, and changing chat info.
+- Admin (أدمن): Full group rights EXCEPT promoting moderators and changing chat info.
+- Creator (منشئ) & Owner (مالك): Full absolute control over all API permission switches.
+- Syncing Mechanism: Any changes made to a user's permissions inside the bot's custom backend must instantly invoke `promote_chat_member` or `restrict_chat_member` to apply those changes natively on Telegram's official servers.
+
+4. STAFF MEDIA CONTROL PANEL (وسائط الادمن)
+- Access: Restrict this feature exclusively to the Owner (المالك) and Creator (المنشئ). (Do not mention the Developer in the user-facing text layout).
+- Trigger: Clicking the new button "وسائط الادمن" prompts for an admin/staff ID or username (completely exclude regular Members and the primary Owner from being targets).
+- Layout: Generates an interactive solid grid matrix showing all media categories (Photos, Stickers, Links, Voice, Videos, etc.). The Owner/Creator can toggle what this specific admin can send. If a media type is disabled for that admin, the bot must instantly delete their message if they send it, overriding their native staff immunity.
+
+5. DEVELOPER PANEL EXTENSION (SECONDARY DEVS)
+Add three dedicated management buttons inside the primary Developer Panel (`/panel`):
+- "إضافة مطور" -> Prompts for a Telegram User ID to save them as a Secondary Developer (مطور ثانوي) in MongoDB.
+- "حذف مطور" -> Removes a User ID from the secondary developer records.
+- "قائمة المطورين" -> Outputs a clean typographic HTML list of all current secondary developers. Secondary developers can access the panel but cannot modify the master primary developer configurations.
+
+6. MASS DEMOTION COMMANDS
+- Reset Commands Integration:
+  * `تنزيل الكل`: Accessible by Developer and Owner only (execute after group check). Loops through all bot-registered staff configurations for that group in MongoDB and clears their local system ranks.
+  * `اعاده تعيين المجموعه`: Accessible strictly by the Group Owner (and Developer globally via bypass, do not mention developer in text). This command executes a complete hard wipe of the group's official administration list. The bot loops through `get_chat_administrators()` and demotes EVERY admin/staff member natively via the Telegram API, stripping privileges regardless of whether they were promoted before or after the bot joined.
+
+7. NATIVE TELEGRAM CUSTOM TITLE FIX (اللقب/التاج)
+- To fix the "Only the owner can edit their custom title" API limitation when using `لقب ` + [text], implement this automatic bypass trick:
+- Logic Flow: When an authorized manager sets a custom title for an admin, the bot must first fetch the user's current Telegram permissions. Then, it silently re-invokes `promote_chat_member` using those exact privileges. This tricks Telegram into registering the bot as the active promoter of that user. Immediately after, call `set_chat_administrator_custom_title` to apply the tag cleanly.
+- Visual Differentiation: Ensure that typographic tags clearly differentiate an Admin tag from a regular Member tag when rendering staff lists dynamically. If the native API still fails due to hard constraints, handle it gracefully via try-except and embed the custom tag text natively inside the bot's HTML output.
+
+Asynchronously structure, optimize, and deploy this patch script inside the main bot application loop.

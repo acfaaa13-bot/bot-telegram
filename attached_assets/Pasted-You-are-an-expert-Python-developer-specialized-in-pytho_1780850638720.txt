@@ -1,0 +1,48 @@
+You are an expert Python developer specialized in python-telegram-bot (version 20+). Build a dynamic, "Unified Keyword Response System" (نظام الردود التلقائية الموحد) integrated with MongoDB (`pymongo`).
+
+CRITICAL UI & LOGIC RULES:
+
+1. STRICTLY NO EMOJIS anywhere in the code, text messages, or buttons. Use crisp Arabic typographic symbols (e.g., ❖, ◈, ▲, ▼, ➔, 【, 】).
+2. BUTTONS STYLING (Telegram Bot API 9.4): When displaying cancellation buttons during the creation workflow, use the 'danger' (Red) style. For success indicators or list controls, use 'success' (Green) or 'primary' (Blue).
+3. TEXT FORMATTING: All bot operational responses must be formatted in structured Arabic HTML (<b>, <blockquote>). For user-defined custom text responses, allow full HTML passing (links, bold, usernames, text-links) exactly as entered.
+4. PERMISSION RESTRICTION: Only the Group Owner (المالك) and Creator (المنشئ) are authorized to add, edit, or delete custom replies. Return an error message for unauthorized attempts.
+5. CARDINALITY: Strictly enforced rule: One unique response per keyword per group (لكل كلمة رد واحد فقط وليس ردين). If a keyword already exists, it must be edited or deleted first.
+
+DATABASE SCHEMA (MongoDB):
+Create a collection named 'custom_responses'. Each document must store:
+
+- `group_id` (Integer)
+- `keyword` (String, stripped and lowercased/normalized)
+- `reply_type` (String: 'text', 'photo', or 'sticker')
+- `content` (String: containing the raw text/HTML OR the Telegram `file_id` for photos/stickers)
+- `caption` (String: Optional HTML caption accompanying a photo reply)
+
+CONVERSATION WORKFLOWS (Using ConversationHandler):
+Implement unified multi-step flows for management:
+
+1. Add Response Command: `اضافة رد`
+    - Step 1: Bot sends an HTML message asking the admin to send the keyword (الكلمة المفتاحية). Provide a colored 'danger' Inline Button reading "إلغاء العملية".
+    - Step 2: Once the keyword is received, verify it doesn't already exist. If unique, save the keyword in the temporary state and ask the admin to send the response.
+    - Step 3: The bot must dynamically intercept the incoming response message:
+        - If it's a TEXT message (can include URLs/usernames): Save `reply_type='text'` and store the HTML text content.
+        - If it's a PHOTO: Save `reply_type='photo'`, store the photo's highest-resolution `file_id`, and capture any accompanying text caption.
+        - If it's a STICKER: Save `reply_type='sticker'` and store the sticker's `file_id`.
+    - Complete: Save seamlessly to MongoDB, terminate conversation, and send a structured HTML success confirmation.
+2. Edit Response Command: `تعديل رد`
+    - Step 1: Bot asks for the existing keyword to modify, with a 'danger' cancel button.
+    - Step 2: Check if the keyword exists in MongoDB for this group. If found, ask the admin to send the new response (accepting Text, Photo, or Sticker just like the add workflow).
+    - Step 3: Overwrite the previous `reply_type` and `content` fields in MongoDB, terminate conversation, and confirm via HTML.
+3. Delete Response Command: `حذف رد`
+    - Can be triggered directly via `حذف رد + الكلمة` (e.g., حذف رد ترحيب) or through a quick step.
+    - The bot searches MongoDB for that specific keyword in the group, deletes the document completely, and sends an HTML confirmation message stating the response has been removed.
+
+GLOBAL MESSAGE TRIGGERING LISTENER:
+
+- Implement a global `MessageHandler` filtering text messages from regular chat members (ignoring commands starting with `/` or specific bot execution keywords).
+- For every incoming text message, strip whitespace, normalize it, and perform a quick lookup in MongoDB matching `group_id` and `keyword`.
+- If a match is found:
+    - If `reply_type == 'text'`: Send the text using `update.message.reply_html(content)`. Ensure text placeholders like #username are rendered dynamically if requested.
+    - If `reply_type == 'photo'`: Use `context.bot.send_photo(chat_id, photo=content, caption=caption, parse_mode='HTML')`.
+    - If `reply_type == 'sticker'`: Use `context.bot.send_sticker(chat_id, sticker=content)`.
+
+Write optimized, production-ready asynchronous Python code. Include fallbacks for conversation expiration, cancellation handlers, and robust error checking for invalid media types.

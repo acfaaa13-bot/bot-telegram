@@ -1,0 +1,35 @@
+You are an expert Python developer specialized in `python-telegram-bot` (version 20+) and MongoDB (`pymongo`). Add these two key modules and fixes to the bot architecture:
+
+CRITICAL DESIGN COMPLIANCE:
+1. STRICTLY NO EMOJIS in any text responses, buttons, alerts, or pop-ups. Use premium Arabic typographic symbols exclusively (❖, ✦, ◈, ▲, ▼, ➔, ◀, 【, 】).
+2. BUTTONS STYLING (API 9.4): All generated buttons must use solid backgrounds via the `style` property ('primary' for blue, 'success' for green, 'danger' for red). No transparent buttons.
+
+MODULE 1: REAL TELEGRAM PROMOTIONS & DEMOTIONS (الترقيات الحقيقية)
+- Update the rank upgrade/downgrade commands (e.g., رفع منشئ, رفع ادمن, رفع مشرف, تنزيل) to interact directly with Telegram's official group hierarchy, instead of just saving a virtual rank in MongoDB.
+- Execution Logic: When a command like `رفع ادمن` or `رفع مشرف` is triggered (via reply or ID), the bot must call `context.bot.promote_chat_member(chat_id, user_id, ...)` with native privileges set to True:
+  * For Admin (أدمن): Pass `can_delete_messages=True`, `can_restrict_members=True`, `can_invite_users=True`, `can_pin_messages=True`, `can_manage_video_chats=True`, `can_manage_chat=True`.
+  * For Moderator (مشرف): Pass a slightly restricted matrix (e.g., `can_delete_messages=True`, `can_invite_users=True`, `can_pin_messages=True`).
+- When `تنزيل` is executed, call `promote_chat_member` with ALL permission flags set to False to completely strip their official admin status from the group, alongside updating MongoDB.
+
+MODULE 2: THE SECRET WHISPER SYSTEM (نظام الهمسة الذكي)
+Implement a dynamic reply-based whisper engine with an automated Private Chat (PV) handler:
+1. Triggering in Group: 
+   - When a user types `همسه` or `همسة` in reply to a target user's message, the bot must intercept it.
+   - Response: The bot replies in the group with an HTML message containing a solid 'primary' (Blue) inline button reading "➔ اكتب الهمسة في الخاص". This button must embed a deep-link routing the user to the bot's PV with payload arguments containing the target user's ID (e.g., `t.me/bot_username?start=whisper_TARGETID_GROUPID`).
+
+2. Capturing Content in PV:
+   - When the sender clicks the button and hits Start in PV, decode the `target_id` and `group_id` from the deep-link arguments.
+   - The bot enters a temporary `ConversationHandler` state, prompting the sender cleanly via HTML to type out the secret message.
+   - Once the sender transmits the text or content, save it securely in a MongoDB 'whispers' collection with a unique `whisper_id`, `sender_id`, `target_id`, `group_id`, and `secret_text`.
+
+3. Posting the Alert back to the Group:
+   - Immediately after saving, the bot sends a clean HTML message back to the original group using the following exact structure:
+     "<b>❖ المستخدم @target_username وصلتلك همسة من @sender_username اضغط على الزر أدناه لرؤية الهمسة</b>"
+   - Attach a single solid 'success' (Green) inline button labeled "❖ إضغط لرؤية الهمسة ❖" containing the unique `whisper_id` inside its `callback_data`.
+
+4. Callback Interaction Check (Pop-up Alert Logic):
+   - When any user clicks the "إضغط لرؤية الهمسة" button in the group, implement a strict identity verification handler:
+   - Case A (Authorized Target): If `callback_query.from_user.id == target_id`, the bot must call `callback_query.answer(text=secret_text, show_alert=True)`. This triggers a native Telegram pop-up containing the secret whisper visible ONLY to them.
+   - Case B (Unauthorized User): If `callback_query.from_user.id != target_id`, the bot must call `callback_query.answer(text="❖ هذه الهمسة ليست لك", show_alert=True)`. This triggers a strict red/warning alert blocking them from reading it.
+
+Ensure both systems operate smoothly asynchronously and perform robust validation on user objects and permission scopes before execution.

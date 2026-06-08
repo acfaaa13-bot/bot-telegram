@@ -1,0 +1,43 @@
+You are an expert Python developer. Build a comprehensive "Media and Protection System" for a Telegram Group Management Bot using `python-telegram-bot` (version 20+) and MongoDB (`pymongo`) to store group-specific configurations.
+
+CRITICAL UI & LOGIC RULES:
+
+1. STRICTLY NO EMOJIS anywhere in the code, text responses, buttons, or logs. Use clean typographic symbols matching Arabic (e.g., ❖, ◈, ▲, ▼, ●, ➔, 【, 】).
+2. BUTTONS STYLING (Telegram Bot API 9.4): Use the `style` property for InlineKeyboardButtons. Restricted/Locked states must be 'danger' (Red). Allowed/Open states must be 'success' (Green). Navigation/Action buttons must be 'primary' (Blue).
+3. TEXT FORMATTING: All bot responses must use structured HTML formatting (<b>, <blockquote>, <tg-spoiler>). Ensure proper escaping of text entities to avoid parsing crashes.
+4. IMMUNITY: The Developer, Owner, Creator, Admins, and Moderators are completely IMMUNE to these media filters. The bot must never delete their messages or media.
+
+PROTECTION FILTERS (10 Media Types):
+The bot must listen to incoming group messages and immediately delete filtered types if they are locked ('تعطيل / قفل') in MongoDB for that group. The types are:
+
+- Photos (الصور) -> Filters photo messages.
+- Videos (الفيديو) -> Filters video messages.
+- GIFs (المتحركة GIF) -> Filters animation messages.
+- Stickers (الملصقات) -> Filters sticker messages.
+- Files (الملفات) -> Filters document/file messages.
+- Links (الروابط) -> Filters messages containing URLs, text_links, or text_mentions (links/usernames).
+- Notifications (الإشعارات) -> Automatically deletes Telegram service messages (e.g., user joined, user left, pinned message notifications).
+- Voice Messages (الرسائل الصوتية) -> Filters voice notes.
+- Video Notes (الفيديو الدائري) -> Filters round video messages (video_note).
+- Contacts (جهات الاتصال) -> Filters contact share cards.
+
+COMMANDS & LOGIC FLOW:
+
+1. Command: `الوسائط` or `وسائط`
+- Response: Sends a well-designed HTML message stating the media options.
+- Attached Inline Keyboard: Exactly 2 buttons in a 1-1 vertical layout or side-by-side:
+    - Button 1: "الوسائط الممنوعة" (Styled as 'primary')
+    - Button 2: "تعديل الوسائط" (Styled as 'primary')
+1. Interactive Workflow - "الوسائط الممنوعة":
+- When clicked, it displays a neat text report using HTML blockquotes showing the current status of the 10 media types in the group. Example:
+<b>❖ حالة الوسائط الحالية:</b>
+<blockquote>الصور: قفل
+الروابط: فتح
+...</blockquote>
+1. Interactive Workflow - "تعديل الوسائط":
+- Check permissions first: ONLY the Group Owner (المالك) or Creator (المنشئ) can access this menu. If anyone else clicks it, answer the callback query with an alert text stating lack of authority.
+- If authorized, displays a grid layout (e.g., 2 columns per row) showing all 10 media types.
+- Next to or inside each media title, show its toggle state. Use Bot API 9.4 styles: If the feature is OPEN (تفعيل/فتح), the button must be 'success' (Green) and display text indicating it is allowed. If LOCKED (تعطيل/قفل), the button must be 'danger' (Red) and display text indicating it is blocked.
+- Clicking any media button toggles its state in MongoDB instantly, updates the inline keyboard colors seamlessly without sending a new message, and applies the restriction to the group handler.
+
+Write complete, modular, production-ready Python code. Implement background exception handling for cases where the bot lacks delete permissions in the group. Keep the code optimized and perfectly aligned with the requested Arabic UI/UX rules.

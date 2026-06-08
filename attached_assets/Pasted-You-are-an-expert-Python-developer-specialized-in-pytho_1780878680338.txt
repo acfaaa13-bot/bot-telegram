@@ -1,0 +1,39 @@
+You are an expert Python developer specialized in `python-telegram-bot` (v20+) and MongoDB (`pymongo`). Implement a highly optimized YouTube Music Downloading & Search System utilizing `yt-dlp`.
+
+CRITICAL UI/UX DESIGN COMPLIANCE:
+1. STRICTLY NO EMOJIS in any text responses, buttons, captions, or audio titles. Use premium Arabic typographic symbols exclusively (❖, ✦, ◈, ➔, ◀).
+2. BUTTON STYLING (API 9.4): All inline buttons must have solid backgrounds via the `style` property ('success' for green, 'primary' for blue, 'danger' for red). No transparent layouts.
+
+CORE SYSTEM CONSTRAINTS:
+- Duration Limit: Strictly block any YouTube video with a duration exceeding 10 minutes (600 seconds).
+- Size Limit: Strictly block any extracted audio file exceeding 50 MB (Telegram's native bot upload limit).
+- Violation Handling: If a video violates these thresholds, instantly abort and send a clean typographic HTML error alert to the user.
+
+OPTIMIZED CACHING & STORAGE ARCHITECTURE:
+- Never store raw binary media files inside MongoDB. Implement a smart 'file_id' caching engine instead:
+  1. When a user requests a song, check MongoDB 'music_cache' collection using the YouTube Video ID.
+  2. If a matching record is found with an active Telegram `file_id`, instantly resend it using `context.bot.send_audio(chat_id, audio=file_id)`.
+  3. If not found, download the audio into a temporary local directory via `yt-dlp` (extracting clean high-quality MP3 format). Extract the official high-resolution YouTube thumbnail image concurrently.
+  4. Send the audio file to Telegram. Capture the returned message object, extract the official `file_id` assigned by Telegram's servers, and save it to MongoDB mapped to the YouTube Video ID.
+  5. Immediately delete the temporary local audio and thumbnail files from the server's disk storage to maintain zero permanent storage footprint.
+
+COMMAND INTEGRATION SCHEMA:
+1. Direct Download Handlers:
+   - Command Regular Expressions: `^تحميل (.+)$` and `^يوت (.+)$`
+   - Execution: Search YouTube for the keyword, pick the top result automatically, validate duration/size constraints, download temporarily, and stream to the user.
+2. Interactive Multi-Result Search Handler:
+   - Command Regular Expression: `^بحث (.+)$`
+   - Execution: Fetch the top 4 or 5 relevant search results from YouTube (Title, Duration, Video ID).
+   - Presentation: Display results sequentially using a solid inline keyboard matrix. Alternate button styles between 'primary' (Blue) and 'success' (Green) per row for maximum scannability.
+   - Callback Logic: Clicking a result button triggers the background automated download engine via its specific video ID (`callback_data="dl_audio_<video_id>"`). Include a solid 'danger' (Red) button reading "◀ رجوع" at the very bottom.
+
+AUDIO METADATA & NATIVE PLAYER INJECTION:
+- When transmitting the audio via `context.bot.send_audio`:
+  * `audio`: Set to the local path or cached file_id string.
+  * `thumbnail`: Pass the extracted YouTube artwork image so it embeds natively into the Telegram audio player widget.
+  * `title`: Set strictly to the official clean YouTube video title.
+  * `filename`: Set as the official YouTube title suffixed with ".mp3".
+  * `caption`: Set exactly to the following HTML format:
+    "<b>❖ تم التحميل بنجاح بواسطة : @[bot_username]</b>"
+
+Ensure all download tasks and API calls operate asynchronously without blocking other group protection processes.

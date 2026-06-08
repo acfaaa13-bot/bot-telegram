@@ -1,0 +1,37 @@
+You are an expert Python developer. Build an advanced "Lock and Unlock System" (نظام القفل والفتح) for a Telegram Group Management Bot using `python-telegram-bot` (version 20+) and MongoDB (`pymongo`).
+
+CRITICAL UI & LOGIC RULES:
+
+1. STRICTLY NO EMOJIS anywhere in the code, responses, buttons, or logs. Use structured typographic symbols (e.g., ❖, ◈, ▲, ▼, ●, ➔, 【, 】).
+2. BUTTONS STYLING (Telegram Bot API 9.4): Use the `style` property for InlineKeyboardButtons. Locked features ('تعطيل / قفل') must be 'danger' (Red). Unlocked/Open features ('تفعيل / فتح') must be 'success' (Green). Navigation buttons must be 'primary' (Blue).
+3. TEXT FORMATTING: All responses must be clean, structured Arabic text formatted in HTML (<b>, <blockquote>, <tg-spoiler>). Ensure proper text entity escaping.
+4. STAFF IMMUNITY: The Developer, Owner, Creator, Admins, and Moderators are completely IMMUNE to all these locks. Their messages/actions must never be deleted or restricted.
+
+LOCKS & PROTECTION LOGIC (8 Core Features):
+Implement global group message handlers that intercept and enforce the following rules if the feature status is LOCKED in MongoDB:
+
+1. Usernames (المعرفات): If locked, immediately delete any message containing the '@' symbol from regular members.
+2. Forwarding (التوجيه): If locked, immediately delete any forwarded message (check `message.forward_date` or `message.forward_origin`).
+3. Pinning (التثبيت): If locked, if a non-admin tries to pin a message, unpin it immediately (or intercept the pin command if triggered via bot).
+4. Editing (التعديل): Use the `edited_message` handler. If locked, immediately delete any message after it gets edited by a regular member.
+5. Repetition/Flood (التكرار): Implement an anti-flood mechanism. If a member sends more than X messages (e.g., 4 messages) within Y seconds (e.g., 3 seconds), delete the repetitive messages and warn them.
+6. Chat (الدردشه): If locked, the entire chat is muted for regular members; the bot must immediately delete ALL incoming messages from non-staff members.
+7. Group Mandatory Subscription (الاشتراك الاجباري): This switch applies strictly to the specific channel set by the Group Owner or Creator (saved per group in MongoDB). If locked, check if the member is in that channel using `get_chat_member`. If they are not subscribed, delete their message and alert them. (Note: Keep this logically independent from the Developer's global subscription, which will be integrated later).
+8. Bots (البوتات): Listen to `new_chat_members`. If locked, if any new bot (`user.is_bot == True`) is added to the group by a non-staff member, ban/kick that bot immediately.
+
+COMMANDS & WORKFLOW:
+
+1. Command: `حمايه المجموعه`
+- Response: Sends an elegant HTML message explaining the configuration options.
+- Attached Inline Keyboard: Exactly 2 buttons in a 1-1 vertical layout or side-by-side:
+    - Button 1: "الاعدادات المسموحه" (Styled as 'primary')
+    - Button 2: "تعديل الاعدادات" (Styled as 'primary')
+1. Workflow - "الاعدادات المسموحه":
+- Displays an HTML text report using blockquotes, listing the exact current status (مفتوح / مقفول) for each of the 8 features in that group based on MongoDB data.
+1. Workflow - "تعديل الاعدادات":
+- Access Check: ONLY the Group Owner (المالك) or Creator (المنشئ) can open this menu. Return an alert to anyone else.
+- UI Layout: Displays a structured grid (e.g., 2 columns per row) for the 8 features.
+- Dynamic Toggles: Each button displays the feature name and its current state. Based on Bot API 9.4: If a feature is OPEN (فتح), the button style is 'success' (Green). If LOCKED (قفل), the button style is 'danger' (Red).
+- Clicking any button toggles its state in MongoDB instantly and updates the inline keyboard styling seamlessly without sending a new message.
+
+Write complete, modular, and optimized Python code. Include proper database fallbacks and exception handling for missing bot permissions.

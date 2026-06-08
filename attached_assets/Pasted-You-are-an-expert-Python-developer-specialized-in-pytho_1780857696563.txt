@@ -1,0 +1,40 @@
+You are an expert Python developer specialized in python-telegram-bot (version 20+) and MongoDB (`pymongo`). Apply the following deep structural updates, bug fixes, and feature re-architectures to the bot code.
+
+CRITICAL DESIGN COMPLIANCE:
+1. STRICTLY NO EMOJIS anywhere in the code, text responses, keyboards, logs, or pop-up alerts. Use clean Arabic typographic symbols exclusively (❖, ✦, ◈, ▲, ▼, ➔, ◀, 【, 】).
+2. BUTTON STYLING (API 9.4): All inline buttons must have solid background colors using the `style` property ('success' for green, 'danger' for red, 'primary' for blue). No transparent buttons.
+3. FOR ALL MENUS: Every secondary dashboard or submenu must feature a solid 'danger' (Red) button at the very bottom row labeled "◀ رجوع" to navigate smoothly back to the parent layout.
+
+MODULE 1: FIXED AUTO-MUTE & PUNISHMENT RECOVERY
+- Restore Commands: Re-implement the text commands `تفعيل الكتم التلقائي` and `تعطيل الكتم التلقائي` to switch the warning execution layer on/off cleanly in MongoDB.
+- Restore Menu: Ensure the text command `الكتم التلقائي` successfully generates and renders the interactive colored configuration dashboard message.
+- Core Action Fixes: Fix the manual text commands `فك كتم`, `فك الكتم`, `فك حظر`, and `فك الحظر`. They must fully lift restrictions via `restrict_chat_member` (restoring all ChatPermissions to True) or `unban_chat_member` natively.
+- Inline Button Unmute Fix: Fix the inline callback query attached to the "فك الكتم" button under punishment alerts. Ensure it extracts the target user's ID accurately and processes the unmute instantly.
+- Bulk Cleaning Fix: Fix `مسح المكتومين` and `مسح المحظورين`. They must loop through all restricted/banned database records for that group, execute native Telegram API unmute/unban actions for each user, clear the entries from MongoDB, and gracefully ignore any errors if a user has already left the group.
+
+MODULE 2: REAL TELEGRAM PERMISSIONS & AUDIT ENGINE (فحص المجموعة)
+- Real Rights Integration: When promoting a user via `رفع منشئ`, `رفع ادمن`, or `رفع مشرف`, the bot must issue real Telegram API privileges via `promote_chat_member`. 
+- Permission Command: Implement the command `صلاحيات` (triggered via reply or ID). It displays a user's current real Telegram permission flags using HTML. If the caller has higher hierarchy, allow them to toggle these permissions interactively using a solid grid keyboard.
+- Telegram Custom Titles (اللقب/التاج): To fix the API restriction error, wrap `set_chat_administrator_custom_title` inside a robust try-except block. Explicitly handle the limitation: Telegram only allows a bot to set/edit a custom title if the bot itself promoted that admin and has `can_promote_members` rights. If it fails, append the custom badge text ("▲ الأدمن", "▼ المشرف") dynamically inside the bot's custom chat lists and text representations instead of crashing.
+- New System Command `فحص المجموعه`: This is a heavy-duty audit command. When called, the bot must query `chat.get_chat_administrators()` to fetch all active real-time group admins, synchronize their roles and real rights instantly into MongoDB, update all stale states, and output a detailed typographic HTML report listing exactly: Real count of Creators, Admins, Moderators, standard Members, active Muted users, and active Banned users.
+
+MODULE 3: DUAL-LAYER SUBSCRIPTION SPLIT (الاشتراك المطور vs الاشتراك الثانوي)
+Completely split the subscription architecture into two distinct, isolated layers:
+1. Developer Layer (اشتراك المطور):
+   - Configured strictly inside the Developer Panel (`/panel`) using an interactive menu called "تعيين الاشتراك الإجباري".
+   - Provides options to target "المجموعات" (Groups Only), "الخاص" (Private PV Only), or Both, with a solid toggle button to switch the global state On/Off.
+2. Group Owner Layer (الاشتراك الثانوي):
+   - Configured exclusively by the Group Owner/Creator via text commands:
+     * `تعيين الاشتراك الثانوي ` + [Link, @Username, or ID]: Validates the channel, checks bot admin status inside it, and saves it as the secondary restriction channel.
+     * `حذف قناه`: Completely removes the secondary channel data from the group's DB.
+     * `تعطيل الاشتراك الثانوي`: Toggles the checking state off while preserving the saved channel data.
+- Execution Middleware: If a regular member sends a message, check both active layers. If any subscription is missing, delete their message instantly and reply with an HTML warning containing the direct subscription URL buttons placed side-by-side in one row.
+
+MODULE 4: GLOBAL & LOCAL REPLY TO MESSAGE ENFORCEMENT
+- Update the custom replies engine (both local group replies and global randomized developer replies).
+- Whenever a user triggers a stored keyword via text message, the bot's response (Text, Photo with Caption, or Sticker) MUST explicitly use `reply_to_message_id=update.message.message_id` to directly bind the response to the user's trigger message inside the group.
+
+MODULE 5: PV CHAT LEANING
+- Ensure that the Private Chat (`/start`) remains clear of group protection command text lists. Keep it highly organized, displaying only the general welcoming menu, source configurations, and the developer card.
+
+Asynchronously compile and deploy these updates, ensuring solid error boundaries around all Telegram API calls.

@@ -1,0 +1,42 @@
+You are an expert Python developer. Build an "Automatic Rank Recognition and Group Statistics System" (نظام التعرف التلقائي والإحصائيات) for a Telegram Group Management Bot using `python-telegram-bot` (version 20+) and MongoDB (`pymongo`).
+
+CRITICAL UI & LOGIC RULES:
+
+1. STRICTLY NO EMOJIS anywhere in the text responses, stats screens, or badges. To maintain the project's consistent premium minimalist style, transform traditional emoji badges into elegant typographic text symbols:
+    - Developer: ❖ المطور (Strictly hidden from public lists, only visible to the developer themselves)
+    - Owner: ✦ المالك
+    - Creator: ◈ المنشئ
+    - Admin: ▲ الأدمن
+    - Moderator: ▼ المشرف
+    - Member: ○ عضو
+2. TEXT FORMATTING: All statistical displays and messages must use structured Arabic HTML formatting (<b>, <blockquote>, ➔). Ensure absolute precision with HTML entity escaping to prevent any markdown or parsing crashes.
+3. CHAT CREATION DATE LOGIC: Since the Telegram Bot API does not expose a native group creation date, the bot must log the exact timestamp when it is first added to a group (via `new_chat_members` filtering for the bot's own ID) into MongoDB and display this as the system registration date (تاريخ التفعيل/الإنشاء).
+
+STATISTICS ENGINE FEATURES:
+When an authorized staff member sends the command `معلومات المجموعه` or `الاحصائيات`, the bot must dynamically aggregate and send a beautiful HTML report structured as follows:
+
+1. Group General Info (معلومات المجموعة):
+    - Group Name (اسم المجموعة): Dynamic fetching of `chat.title`.
+    - Group ID (معرف المجموعة): Dynamic fetching of `chat.id`.
+    - Setup Date (تاريخ الإنشاء): The recorded timestamp of when the bot joined.
+    - Member Count (عدد الأعضاء): Fetched via `chat.get_member_count()`.
+2. Staff Permissions Statistics (الإحصائيات الإدارية):
+    - Query both Telegram's active cache (`get_chat_administrators`) and the MongoDB 'users' collection to count users assigned to each specific custom rank level:
+        - عدد المنشئين (Creators Count)
+        - عدد الادمنيه (Admins Count)
+        - عدد المشرفين (Moderators Count)
+3. Punishments Statistics (إحصائيات العقوبات):
+    - Query the MongoDB collections built in the Mute/Ban module to count live restrictions in this specific group:
+        - عدد المكتومين (Currently Muted Users Count)
+        - عدد المحظورين (Currently Banned Users Count)
+
+AUTOMATIC RANK RECOGNITION MIDDLEWARE:
+Implement a dynamic system that intercepts user interactions (such as the `رتبتي` command or when generating staff listings):
+
+- Step 1: Check if the user ID matches the hardcoded Developer ID. If yes, assign the badge "❖ المطور".
+- Step 2: Call `chat.get_chat_member(user_id)`. If the status is `creator`, automatically recognize them as the Group Owner and assign "✦ المالك".
+- Step 3: Cross-reference the user's ID with the group's hierarchy document in MongoDB to determine if they have been promoted to Creator, Admin, or Moderator via the bot, then apply the corresponding symbol ("◈ المنشئ", "▲ الأدمن", "▼ المشرف").
+- Step 4: If no administrative records exist, default to "○ عضو".
+- When a user triggers `رتبتي`, return their rank with its custom typographic badge formatted in bold and spoiler tags cleanly.
+
+Write highly optimized, asynchronous, and clean Python code. Handle exceptions gracefully if the bot cannot fetch chat administrators or member counts due to temporary network or permission restrictions.

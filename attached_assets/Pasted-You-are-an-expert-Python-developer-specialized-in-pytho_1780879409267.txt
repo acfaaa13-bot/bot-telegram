@@ -1,0 +1,54 @@
+You are an expert Python developer specialized in python-telegram-bot (version 20+) and MongoDB (`pymongo`). Implement the Mass Message Deletion System and update the Main Menu Architecture to include the 5th core "Games & Music" module.
+
+CRITICAL DESIGN COMPLIANCE:
+1. STRICTLY NO EMOJIS in any text responses, buttons, menus, or instructions. Use premium Arabic typographic symbols exclusively (❖, ✦, ◈, ▲, ▼, ➔, ◀, 【, 】).
+2. BUTTON STYLING (API 9.4): All inline keyboards must feature solid colored backgrounds via the `style` property ('primary' for blue, 'success' for green, 'danger' for red). No transparent buttons.
+3. PERSONALITY: Minimalist, clean, highly functional, and completely free of AI-related boilerplate phrases.
+
+MODULE 1: MASS MESSAGE DELETION SYSTEM (ماسح الرسائل)
+- Trigger Command Regex: `^مسح (\d+)$` (e.g., مسح 100, المسح 500 - using the normalization layer).
+- Access Control: Restrict this command strictly to Group Owner, Creator, Admins, and Moderators. Regular members cannot trigger it.
+- Logic & Constraints:
+  * Extract the target integer N.
+  * Enforce a strict upper limit: If N > 1000, automatically cap the deletion count at 1000 messages.
+  * Asynchronously batch and delete the last N messages from the chat using `context.bot.delete_messages` or an optimized looping mechanism.
+  * Handle Telegram API limits gracefully (e.g., messages older than 48 hours cannot be deleted in bulk; skip them or handle the exception without crashing).
+  * Once completed, send a temporary typographic HTML confirmation message: "<b>❖ تم مسح [Count] رسالة بنجاح.</b>". Automatically delete this confirmation message after exactly 5 seconds to keep the chat clean.
+
+MODULE 2: MAIN MENU INTERFACE UPDATE (واجهة المجموعات)
+- Modify the main group dashboard invocation layout (triggered via 'بوت', 'اوامر', 'الاوامر').
+- Append a standalone 5th core navigation button in the main inline matrix layout labeled strictly: "❖ الألعاب والميوزك ❖" and style it as a solid 'primary' (Blue) background button.
+
+MODULE 3: GAMES & MUSIC DASHBOARD (قسم الألعاب والميوزك)
+When the "❖ الألعاب والميوزك ❖" button is clicked, dynamically edit the menu interface to render an organized, premium typographic HTML guide detailing all commands and how to play:
+
+1. Text Presentation Layout (HTML formatted):
+   "<b>❖ قسم الترفيه، الألعاب والموسيقى</b>
+   
+   <b>◀ أوامر الموسيقى والتحميل:</b>
+   ◈ تحميل + اسم الأغنية (تحميل مباشر عالي الجودة)
+   ◈ يوت + اسم الأغنية (تحميل بديل سريع)
+   ◈ بحث + اسم الأغنية (عرض مصفوفة أزرار خيارات متعددة)
+   
+   <b>◀ أوامر الألعاب والتسلية:</b>
+   ◈ سؤال / صح ام خطا (تحدي المعلومات والخيارات)
+   ◈ xo (بدء تحدي إكس أوه تفاعلي بالأزرار)
+   ◈ تحدي الرياضيات (سباق المعادلات الحسابية السريعة)
+   ◈ حجرة ورقة مقص (تحدي الاختيارات المخفية)
+   ◈ حقل الالغام (شبكة الحظ وجمع النقاط الجماعية)
+   ◈ تخمين الرقم (تخمين الرقم السري في 5 محاولات)
+   
+   <b>◀ إحصائيات الترفيه:</b>
+   ◈ احصائياتي (عرض رصيدك ونقاطك ونسب الفوز)
+   ◈ ترتيب اللاعبين (لوحة شرف توب 10 في المجموعة)
+   
+   <b>◀ التحكم بالإعدادات (للمدراء فقط):</b>
+   ◈ تفعيل الالعاب / تعطيل الالعاب"
+
+2. Embedded Keyboard Controls:
+   - Below this text guide, place exactly two management toggle buttons side-by-side in a single row for staff navigation:
+     * Button 1: "تفعيل الألعاب" styled as 'success' (Green).
+     * Button 2: "تعطيل الألعاب" styled as 'danger' (Red).
+   - At the absolute bottom row of this matrix, place a standalone navigation button styled as 'danger' (Red) reading: "◀ رجوع" to route the manager or member seamlessly back to the main group command center screen.
+
+Ensure all routing callbacks update the interface dynamically via asynchronous context switches without message flickering.

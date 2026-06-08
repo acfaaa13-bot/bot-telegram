@@ -1,0 +1,37 @@
+You are an expert Python developer specialized in python-telegram-bot (version 20+). Build the core "Arabic Text Normalization and Universal Command Processor Engine" to route and execute all previous bot modules seamlessly.
+
+CRITICAL UI & PERSONALITY RULES:
+
+1. STRICTLY NO EMOJIS anywhere in the bot-generated responses, menus, or lists. Use clean Arabic typographic symbols (e.g., ❖, ◈, ▲, ▼, ➔, 【, 】).
+2. NO AI CLICHÉS OR FILLER TEXT: Completely avoid robotic self-introductions like "أنا بوت حماية بالذكاء الاصطناعي". The user interface must be minimal, clean, sharp, and highly functional, displaying only requested information and direct operation panels.
+3. LANGUAGE: The entire interface, menus, help text, and command triggers must be exclusively in Arabic. Do not use standard slash commands like /ban or /mute for group operations. Rely entirely on native text words.
+4. BUTTONS STYLING: Continue enforcing Bot API 9.4 colored buttons (`style='primary'`, `style='success'`, `style='danger'`) across all generated navigation and interface menus.
+
+ARABIC TEXT NORMALIZATION FUNCTION:
+Implement a robust text preprocessing function that sanitizes and normalizes every incoming group message before checking it against command listeners. The function must apply these exact linguistic mapping rules:
+
+- Letters 'أ', 'إ', 'آ' must be normalized to a standard 'ا'.
+- Letters 'ى' must be normalized to 'ي'.
+- Word endings with 'ة' and 'ه' must be treated interchangeably (e.g., if a command looks for 'حمايه', it must also trigger if the user writes 'حماية').
+- Prefix Stripping: Strip the definite article 'ال' if it appears at the beginning of any word matching a known command (e.g., 'الكتم' becomes 'كتم', 'الوسائط' becomes 'وسائط', 'الاحصائيات' becomes 'احصائيات').
+
+MAIN TEXT COMMAND ROUTING:
+Use a global `MessageHandler(filters.TEXT & ~filters.COMMAND)` to capture text strings and run them through the normalization function. Match the parsed text to trigger these actions:
+
+1. Main Menu Invocation (Keywords: 'بوت', 'اوامر', 'الاوامر'):
+    - Displays the main command center interface with a categorized grid layout using 'primary' colored inline buttons pointing to different module instructions (e.g., قسم الحماية, قسم الرتب, قسم الوسائط).
+2. Developer Profile Command (Keyword: 'المطور'):
+    - Use `context.bot.get_chat(DEVELOPER_ID)` to dynamically fetch the Developer's live Telegram account bio/description.
+    - Use `context.bot.get_user_profile_photos(DEVELOPER_ID)` to fetch their current profile photo.
+    - Response: Send the profile photo with the fetched bio cleanly formatted in an HTML blockquote as the caption. Attach a single 'primary' colored inline URL button at the bottom labeled "تواصل مع المطور" linking directly to the Developer's private chat (`t.me/username`).
+3. Group Owner Profile Command (Keyword: 'المالك'):
+    - Dynamically identify the current group owner (chat creator) using `chat.get_chat_administrators`.
+    - Fetch the owner's profile picture, bio/description, and username via API.
+    - Response: Send their profile photo with an HTML formatted text containing their username and description. Attach a 'primary' colored inline URL button linking to their profile.
+4. Existing Modules Routing (Pass normalized text to trigger previously designed systems):
+    - 'كتم تلقائي' or 'الكتم التلقائي' -> Triggers the Auto-Mute settings panel.
+    - 'حمايه المجموعه' -> Triggers the global locks configuration menu.
+    - 'وسائط' or 'الوسائط' -> Triggers the media filters panel.
+    - Ensure all other functional text commands (`رتبتي`, `صلاحياتي`, `المدراء`, `المكتومين`, `المحظورين`, etc.) are recognized instantly regardless of whether the user typed them with or without 'ال' or with different configurations of 'ا/أ/إ' and 'ي/ى'.
+
+Write complete, elegant, and highly optimized asynchronous Python code. Ensure regex or string replacement mechanisms are exceptionally fast to handle high-traffic group environments without adding message processing latency.
